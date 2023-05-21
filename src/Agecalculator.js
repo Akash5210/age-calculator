@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useRef, useState} from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -7,13 +7,14 @@ import birthdaySong from "./bSong.mp3";
 export default function Agecalculator(){
     const [birthday, setBirthday] = useState("");
     const [dateValue, setDateValue] = useState({});
-    const [intervalId, setIntervalId] = useState(0);
-    
-    let wanted = new Audio(birthdaySong)
+    const intervalId = useRef(null);            // useState hook can also be use to store the reference of setInterval() but the good practice is using useRef()
+
+    let wanted = new Audio(birthdaySong);
+
     //function for calculating the age and also check the error bounderies
     const handleCalculate = ()=>{ 
-        if(intervalId)                          //it will clean the previous setInterval reference
-            clearInterval(intervalId);
+        if(intervalId.current)                          //it will clean the previous setInterval reference
+            clearInterval(intervalId.current);
 
         const birthArr = birthday.split("-").map(item => Number(item));     //getting the year,month,date from input date field
         const currentDate = new Date();
@@ -44,7 +45,7 @@ export default function Agecalculator(){
             wanted.play();
         }
         
-        const newIntervalId = setInterval(()=>{
+        intervalId.current = setInterval(()=>{
             const currentDate = new Date();
             let temp = {
                 years: currentDate.getFullYear() - birthArr[0],
@@ -75,13 +76,12 @@ export default function Agecalculator(){
             }
             setDateValue(temp);
         }, 1000);
-        setIntervalId(newIntervalId);               //storing the reference of setInterval into useState for dynamic implementation
    }
 
     //function for cleaning the field and reset to its default values
     const handleReset = ()=>{
-        clearInterval(intervalId);
-        setIntervalId(null);
+        clearInterval(intervalId.current);
+        intervalId.current = null;
         setDateValue({});
         setBirthday("dd-mm-yyyy");
     }
